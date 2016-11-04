@@ -19,10 +19,10 @@ int main()
     const int b[arraySize] = { 10, 20, 30, 40, 50 };
     int c[arraySize] = { 0 };
 
-    // Сложение векторов на GPU.
+    // РЎР»РѕР¶РµРЅРёРµ РІРµРєС‚РѕСЂРѕРІ РЅР° GPU.
     cudaError_t cudaStatus = addWithCuda(c, a, b, arraySize);
 
-	//Если запуск прошел не успешно выводим сообщение
+	//Р•СЃР»Рё Р·Р°РїСѓСЃРє РїСЂРѕС€РµР» РЅРµ СѓСЃРїРµС€РЅРѕ РІС‹РІРѕРґРёРј СЃРѕРѕР±С‰РµРЅРёРµ
     if (cudaStatus != cudaSuccess) {
         fprintf(stderr, "addWithCuda failed!");
         return 1;
@@ -32,8 +32,8 @@ int main()
     printf("{1,2,3,4,5} + {10,20,30,40,50} = {%d,%d,%d,%d,%d}\n",
         c[0], c[1], c[2], c[3], c[4]);
 
-    // cudaDeviceReset должен вызываться перед выходом для того, чтобы 
-	// инструменты профилирования и отслеживания показали полные данные.
+    // cudaDeviceReset РґРѕР»Р¶РµРЅ РІС‹Р·С‹РІР°С‚СЊСЃСЏ РїРµСЂРµРґ РІС‹С…РѕРґРѕРј РґР»СЏ С‚РѕРіРѕ, С‡С‚РѕР±С‹ 
+	// РёРЅСЃС‚СЂСѓРјРµРЅС‚С‹ РїСЂРѕС„РёР»РёСЂРѕРІР°РЅРёСЏ Рё РѕС‚СЃР»РµР¶РёРІР°РЅРёСЏ РїРѕРєР°Р·Р°Р»Рё РїРѕР»РЅС‹Рµ РґР°РЅРЅС‹Рµ.
     cudaStatus = cudaDeviceReset();
     if (cudaStatus != cudaSuccess) {
         fprintf(stderr, "cudaDeviceReset failed!");
@@ -43,24 +43,24 @@ int main()
     return 0;
 }
 
-// Вспомогательная функция использования CUDA для параллельного сложения векторов.
+// Р’СЃРїРѕРјРѕРіР°С‚РµР»СЊРЅР°СЏ С„СѓРЅРєС†РёСЏ РёСЃРїРѕР»СЊР·РѕРІР°РЅРёСЏ CUDA РґР»СЏ РїР°СЂР°Р»Р»РµР»СЊРЅРѕРіРѕ СЃР»РѕР¶РµРЅРёСЏ РІРµРєС‚РѕСЂРѕРІ.
 cudaError_t addWithCuda(int *c, const int *a, const int *b, unsigned int size)
 {
-	//Указатели на данные в памяти GPU
+	//РЈРєР°Р·Р°С‚РµР»Рё РЅР° РґР°РЅРЅС‹Рµ РІ РїР°РјСЏС‚Рё GPU
     int *dev_a = 0;
     int *dev_b = 0;
     int *dev_c = 0;
 
     cudaError_t cudaStatus;
 
-    // Выбор GPU для запуска, можно менять в системах с несколькими GPU.
+    // Р’С‹Р±РѕСЂ GPU РґР»СЏ Р·Р°РїСѓСЃРєР°, РјРѕР¶РЅРѕ РјРµРЅСЏС‚СЊ РІ СЃРёСЃС‚РµРјР°С… СЃ РЅРµСЃРєРѕР»СЊРєРёРјРё GPU.
     cudaStatus = cudaSetDevice(0);
     if (cudaStatus != cudaSuccess) {
         fprintf(stderr, "cudaSetDevice failed!  Do you have a CUDA-capable GPU installed?");
         goto Error;
     }
 
-    // Выделение GPU памяти для трех векторов (два входных, один выходной)    .
+    // Р’С‹РґРµР»РµРЅРёРµ GPU РїР°РјСЏС‚Рё РґР»СЏ С‚СЂРµС… РІРµРєС‚РѕСЂРѕРІ (РґРІР° РІС…РѕРґРЅС‹С…, РѕРґРёРЅ РІС‹С…РѕРґРЅРѕР№)    .
     cudaStatus = cudaMalloc((void**)&dev_c, size * sizeof(int));
     if (cudaStatus != cudaSuccess) {
         fprintf(stderr, "cudaMalloc failed!");
@@ -79,7 +79,7 @@ cudaError_t addWithCuda(int *c, const int *a, const int *b, unsigned int size)
         goto Error;
     }
 
-    // Копировние исходных векторов из оперативной памяти в память GPU.
+    // РљРѕРїРёСЂРѕРІРЅРёРµ РёСЃС…РѕРґРЅС‹С… РІРµРєС‚РѕСЂРѕРІ РёР· РѕРїРµСЂР°С‚РёРІРЅРѕР№ РїР°РјСЏС‚Рё РІ РїР°РјСЏС‚СЊ GPU.
     cudaStatus = cudaMemcpy(dev_a, a, size * sizeof(int), cudaMemcpyHostToDevice);
     if (cudaStatus != cudaSuccess) {
         fprintf(stderr, "cudaMemcpy failed!");
@@ -92,25 +92,25 @@ cudaError_t addWithCuda(int *c, const int *a, const int *b, unsigned int size)
         goto Error;
     }
 
-    // Запуск GPU с одним потоком на каждый элемент вектора.
+    // Р—Р°РїСѓСЃРє GPU СЃ РѕРґРЅРёРј РїРѕС‚РѕРєРѕРј РЅР° РєР°Р¶РґС‹Р№ СЌР»РµРјРµРЅС‚ РІРµРєС‚РѕСЂР°.
     addKernel<<<1, size>>>(dev_c, dev_a, dev_b);
 
-    // Проверка на ошибки при запуске
+    // РџСЂРѕРІРµСЂРєР° РЅР° РѕС€РёР±РєРё РїСЂРё Р·Р°РїСѓСЃРєРµ
     cudaStatus = cudaGetLastError();
     if (cudaStatus != cudaSuccess) {
         fprintf(stderr, "addKernel launch failed: %s\n", cudaGetErrorString(cudaStatus));
         goto Error;
     }
     
-    // cudaDeviceSynchronize ждет окончания работы всехъ потоков, и возвращает
-    // любые ошибки, возникающие во время запуска.
+    // cudaDeviceSynchronize Р¶РґРµС‚ РѕРєРѕРЅС‡Р°РЅРёСЏ СЂР°Р±РѕС‚С‹ РІСЃРµС…СЉ РїРѕС‚РѕРєРѕРІ, Рё РІРѕР·РІСЂР°С‰Р°РµС‚
+    // Р»СЋР±С‹Рµ РѕС€РёР±РєРё, РІРѕР·РЅРёРєР°СЋС‰РёРµ РІРѕ РІСЂРµРјСЏ Р·Р°РїСѓСЃРєР°.
     cudaStatus = cudaDeviceSynchronize();
     if (cudaStatus != cudaSuccess) {
         fprintf(stderr, "cudaDeviceSynchronize returned error code %d after launching addKernel!\n", cudaStatus);
         goto Error;
     }
 
-    // Копирование результирующих данных из памяти GPU (device)в оперативную память (host).
+    // РљРѕРїРёСЂРѕРІР°РЅРёРµ СЂРµР·СѓР»СЊС‚РёСЂСѓСЋС‰РёС… РґР°РЅРЅС‹С… РёР· РїР°РјСЏС‚Рё GPU (device)РІ РѕРїРµСЂР°С‚РёРІРЅСѓСЋ РїР°РјСЏС‚СЊ (host).
     cudaStatus = cudaMemcpy(c, dev_c, size * sizeof(int), cudaMemcpyDeviceToHost);
     if (cudaStatus != cudaSuccess) {
         fprintf(stderr, "cudaMemcpy failed!");
@@ -118,10 +118,11 @@ cudaError_t addWithCuda(int *c, const int *a, const int *b, unsigned int size)
     }
 
 Error:
-	//Освобождение памяти на видеокарте
+	//РћСЃРІРѕР±РѕР¶РґРµРЅРёРµ РїР°РјСЏС‚Рё РЅР° РІРёРґРµРѕРєР°СЂС‚Рµ
     cudaFree(dev_c);
     cudaFree(dev_a);
     cudaFree(dev_b);
     
     return cudaStatus;
 }
+
